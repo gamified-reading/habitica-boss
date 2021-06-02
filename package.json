@@ -1,0 +1,26 @@
+{
+  "name": "habitica-boss",
+  "version": "0.1.0",
+  "description": "A tool to power a quest-like boss for Habitica challenges, in the style of the Gamified Reading guild's Finriq.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "dev": "nodemon ./test/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benjaminbhollon/habitica-boss.git"
+  },
+  "author": "Benjamin Hollon",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/benjaminbhollon/habitica-boss/issues"
+  },
+  "homepage": "https://github.com/benjaminbhollon/habitica-boss#readme",
+  "dependencies": {
+    "ajv": "^8.5.0",
+    "habitica": "^4.0.0"
+  }
+}
