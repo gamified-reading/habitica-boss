@@ -28,7 +28,7 @@ class Boss {
     }
     // If there's an alt report, go ahead and set the final report
     if (challenge.altReport) this.altReport = challenge.altReport;
-    this.report = (challenge.altReport ? `## [${challenge.name}](https://habitica.com/challenges/${challenge.id})\n\n${challenge.altReport}` : '');
+    this.report = (challenge.altReport ? `### [${challenge.name}](https://habitica.com/challenges/${challenge.id})\n\n${challenge.altReport}` : '');
   }
 }
 

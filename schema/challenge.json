@@ -26,6 +26,9 @@
     },
     "altReport": {
       "type": "string"
+    },
+    "challengeTitle": {
+      "type": "string"
     }
   },
   "required": ["name", "id", "maxHealth", "maxPower", "attacks", "tasks"]

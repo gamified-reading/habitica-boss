@@ -1,4 +1,6 @@
 const request = require('./habiticaRequest.js');
+const ProgressBar = require('progress');
+let bar = null;
 
 class Bot {
   queue = [];
@@ -53,7 +55,6 @@ class Bot {
             await addToMemberCount.bind(this, challenge, lastId)
           });
         } else {
-          console.error(challenge, lastId.length);
           throw new Error(JSON.stringify(result));
         }
       }
@@ -68,13 +69,14 @@ class Bot {
 
       if (result.success) {
         member.stats = result.data;
+        bar.tick();
       } else {
         if (result.status === 429) {
-          console.info('Rate limited. Trying again in 60 seconds.');
+          bar.interrupt('Rate limited. Trying again in 60 seconds.');
           this.queue.splice(0, 0, async () => {
             let promise = new Promise((resolve, reject) => {
               setTimeout(() => {
-                console.info('Continuing...');
+                bar.interrupt('Continuing...');
                 resolve("done!");
               }, 60000)
             });
@@ -98,6 +100,7 @@ class Bot {
 
       // For each member, fetch challenge stats
       this.queue.push((() => {
+        bar = new ProgressBar(':bar', {total: challenge.members.length});
         for (const member of challenge.members) {
           this.queue.splice(0, 0, fetchMemberStats.bind(this, member, challenge));
         }
@@ -174,19 +177,61 @@ class Bot {
       }
 
       // Update the report
-      challenge.report = `## [${challenge.name}](https://habitica.com/challenges/${challenge.id})
+      challenge.report = `### [${challenge.name}](https://habitica.com/challenges/${challenge.id})
 
-Health: ${challenge.status.health}/${challenge.maxHealth}
+Health: ${challenge.status.health}/${challenge.maxHealth}  
 Power: ${challenge.status.power}/${challenge.maxPower}`;
+
+      // If monster is defeated...
+      if (challenge.status.health < 0) {
+        challenge.report = `### [${challenge.name}](https://habitica.com/challenges/${challenge.id})\n\n${challenge.name} has been defeated. `;
+      }
 
       if (numAttacks) {
         challenge.report += `\n\nLast attack: \`${challenge.attacks[numAttacks % challenge.attacks.length].message}\``
       }
     }
-    console.log(
-      '## Challenge Statuses\n\n' +
-      this.challenges.list.map(c => c.report).join('\n\n')
-    );
+  }
+
+  async sendReport(guildId, append) {
+    async function makeRequest(guildId, report) {
+      const result = await request(
+        `/groups/${guildId}/chat`,
+        'post',
+        {
+          message: compiledReport
+        },
+        this.credentials
+      );
+
+      if (result.success) {
+        console.info('Message sent!');
+      } else { // There was a problem
+        if (result.status === 429) { // HTTP 429 means rate limiting
+          bar.interrupt('Rate limited. Trying again in 60 seconds.');
+          this.queue.splice(0, 0, async () => {
+            let promise = new Promise((resolve, reject) => {
+              setTimeout(() => {
+                bar.interrupt('Continuing...');
+                resolve("done!");
+              }, 60000)
+            });
+
+            await promise;
+
+            await this.bind(this, guildId, report)
+          });
+        } else {
+          throw new Error(JSON.stringify(result));
+        }
+      }
+    }
+
+    const compiledReport = `## Challenge Statuses\n\n` + this.challenges.list.map(c => c.report).join('\n\n') + append;
+
+    this.queue.push(makeRequest.bind(this, guildId, compiledReport))
+
+    await this.#runQueue();
   }
 }
 
