@@ -1,0 +1,17 @@
+{
+  "title": "Task",
+  "description": "Instructions for what to do when a task is complete or incomplete.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "positive": {
+      "type": "integer"
+    },
+    "negative": {
+      "type": "integer"
+    }
+  },
+  "required": ["name"]
+}

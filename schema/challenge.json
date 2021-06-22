@@ -6,7 +6,7 @@
     "name": {
       "type": "string"
     },
-    "challengeId": {
+    "id": {
       "type": "string"
     },
     "maxHealth": {
@@ -28,5 +28,5 @@
       "type": "string"
     }
   },
-  "required": ["name", "challengeId", "maxHealth", "maxPower", "attacks", "tasks"]
+  "required": ["name", "id", "maxHealth", "maxPower", "attacks", "tasks"]
 }
