@@ -229,7 +229,9 @@ Power: ${challenge.status.power}/${challenge.maxPower}`;
       }
     }
 
-    const compiledReport = `## Challenge Statuses\n\n` + this.challenges.list.map(c => c.report).join('\n\n') + append;
+    let compiledReport = `## Challenge Statuses\n\n` + this.challenges.list.map(c => c.report).join('\n\n');
+
+    if (append.length) compiledReport += '\n\n---\n\n' + append;
 
     this.queue.push(makeRequest.bind(this, guildId, compiledReport))
 
