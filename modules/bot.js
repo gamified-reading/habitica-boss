@@ -133,6 +133,14 @@ class Bot {
       }
       // Every member with valid stats
       for (let member of challenge.members.filter(m => typeof m !== 'undefined')) {
+        // Personal stats
+        member.personal = {
+          positive: 0,
+          negative: 0,
+          health: 0,
+          power: 0
+        }
+
         // Every task in the list
         for (let task of challenge.tasks) {
           // Set the version of the task from the member stats
@@ -141,6 +149,8 @@ class Bot {
             case 'todo':
               // If it's completed, the task is positive
               if (dataTask.completed) {
+                member.personal.positive++;
+                member.personal.health += task.positive;
                 challenge.status.health += task.positive;
               }
               break;
@@ -151,10 +161,15 @@ class Bot {
               dataTask.history.map(h => {
                 if (value === h.value) return 0;
                 if (value > h.value) {
+                  member.personal.negative++;
+                  member.personal.health += task.negative;
+                  member.personal.power++;
                   challenge.status.health += task.negative;
                   challenge.status.power++;
                   return -1;
                 } else {
+                  member.personal.positive++;
+                  member.personal.health += task.positive;
                   challenge.status.health += task.positive;
                   return 1;
                 }

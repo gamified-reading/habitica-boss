@@ -1,6 +1,6 @@
 {
   "name": "habitica-boss",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "A tool to power a quest-like boss for Habitica challenges, in the style of the Gamified Reading guild's Finriq.",
   "main": "index.js",
   "directories": {
