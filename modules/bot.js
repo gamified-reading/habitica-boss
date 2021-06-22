@@ -195,7 +195,7 @@ class Bot {
       // Update the report
       challenge.report = `### [${challenge.name}](https://habitica.com/challenges/${challenge.id})
 
-Health: ${challenge.status.health}/${challenge.maxHealth}
+Health: ${challenge.status.health}/${challenge.maxHealth}  
 Power: ${challenge.status.power}/${challenge.maxPower}`;
 
       // If monster is defeated...
