@@ -1,4 +1,5 @@
 const request = require('./habiticaRequest.js');
+const cron = require('node-cron');
 const ProgressBar = require('progress');
 let bar = null;
 
@@ -179,7 +180,7 @@ class Bot {
       // Update the report
       challenge.report = `### [${challenge.name}](https://habitica.com/challenges/${challenge.id})
 
-Health: ${challenge.status.health}/${challenge.maxHealth}  
+Health: ${challenge.status.health}/${challenge.maxHealth}
 Power: ${challenge.status.power}/${challenge.maxPower}`;
 
       // If monster is defeated...
@@ -193,7 +194,8 @@ Power: ${challenge.status.power}/${challenge.maxPower}`;
     }
   }
 
-  async sendReport(guildId, append) {
+  // Send the already-generated reports to a specified guild chat
+  async sendReport(guildId, append = '') {
     async function makeRequest(guildId, report) {
       const result = await request(
         `/groups/${guildId}/chat`,
@@ -232,6 +234,11 @@ Power: ${challenge.status.power}/${challenge.maxPower}`;
     this.queue.push(makeRequest.bind(this, guildId, compiledReport))
 
     await this.#runQueue();
+  }
+
+  // Schedule a task to run repeatedly (takes a cron schedule--default daily)
+  scheduleTask(task, schedule = '0 0 * * *') {
+    cron.schedule(schedule, task);
   }
 }
 
