@@ -22,6 +22,7 @@ class Bot {
   }
   // Updates all the member stats, including task completion history
   async updateMembers() {
+    const startTime = Date.now();
     // Runs recursively until the entire member list is fetched
     async function addToMemberCount(challenge, lastId) {
       // Request the next (or first) set of members
@@ -53,7 +54,7 @@ class Bot {
 
             await promise;
 
-            await addToMemberCount.bind(this, challenge, lastId)
+            await addToMemberCount.bind(this, challenge, lastId)();
           });
         } else {
           throw new Error(JSON.stringify(result));
@@ -84,14 +85,14 @@ class Bot {
 
             await promise;
 
-            await fetchMemberStats.bind(this, member, challenge);
+            await fetchMemberStats.bind(this, member, challenge)();
           });
         } else {
           throw new Error(result);
         }
       }
     }
-
+    console.info('Getting member counts...');
     for (let challenge of this.challenges.list) {
       if (challenge.altReport) continue;
 
@@ -101,6 +102,7 @@ class Bot {
 
       // For each member, fetch challenge stats
       this.queue.push((() => {
+        console.info('Getting member info for ' + challenge.name + '...');
         bar = new ProgressBar(':bar', {total: challenge.members.length});
         for (const member of challenge.members) {
           this.queue.splice(0, 0, fetchMemberStats.bind(this, member, challenge));
@@ -117,6 +119,8 @@ class Bot {
 
     // Run the queue
     await this.#runQueue();
+
+    console.info('All stats fetched. Elapsed time: ' + (Math.floor((Date.now() - startTime) / 10) / 100) + 's');
   }
 
   // Calculate the stats from the already-fetdched member list
@@ -195,7 +199,7 @@ class Bot {
       // Update the report
       challenge.report = `### [${challenge.name}](https://habitica.com/challenges/${challenge.id})
 
-Health: ${challenge.status.health}/${challenge.maxHealth}  
+Health: ${challenge.status.health}/${challenge.maxHealth}
 Power: ${challenge.status.power}/${challenge.maxPower}`;
 
       // If monster is defeated...

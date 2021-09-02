@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-The following versions are currently considered secure for your useage. Please note that all versions under 1.0.0 are development releases and not considered stable.
+The following versions are currently considered secure for your usage. Please note that all versions under 1.0.0 are development releases and not considered stable.
 
 | Version | Supported          |
 | ------- | ------------------ |
