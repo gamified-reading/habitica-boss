@@ -23,6 +23,14 @@ class Bot {
   // Updates all the member stats, including task completion history
   async updateMembers() {
     const startTime = Date.now();
+    let tempChallenges = this.challenges.list.map(original =>
+      Object.assign(
+        Object.create(
+          Object.getPrototypeOf(original)
+        ),
+        original
+      )
+    );
     // Runs recursively until the entire member list is fetched
     async function addToMemberCount(challenge, lastId) {
       // Request the next (or first) set of members
@@ -93,7 +101,7 @@ class Bot {
       }
     }
     console.info('Getting member counts...');
-    for (let challenge of this.challenges.list) {
+    for (let challenge of tempChallenges) {
       if (challenge.altReport) continue;
 
       // Get challenge members
@@ -119,6 +127,8 @@ class Bot {
 
     // Run the queue
     await this.#runQueue();
+
+    this.challenges.list = tempChallenges;
 
     console.info('All stats fetched. Elapsed time: ' + (Math.floor((Date.now() - startTime) / 10) / 100) + 's');
   }
