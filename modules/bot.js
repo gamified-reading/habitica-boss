@@ -308,6 +308,39 @@ Power: ${challenge.status.power}/${challenge.maxPower}`;
     await this.#runQueue();
   }
 
+  chooseRaffleWinners(challengeId, n = 1) {
+    const challenge = this.challenges.list.find(c => c.id === challengeId);
+    if (challenge === undefined) throw new Error('Could not find challenge ' + challengeId);
+
+    if (n > challenge.members.length) throw new Error(
+      `Cannot choose ${n} winners out of ${challenge.members.length} total members.`
+    );
+
+    // Create raffle
+    let tickets = [];
+    for (var member of challenge.members) {
+      tickets.push(...
+        ' '
+          .repeat(
+            Math.max(
+              (member.personal.positive - member.personal.negative), 1
+            )
+          )
+          .split('') // Create an empty array item for each ticket
+          .map(m => member.auth.local.username) // Set the value of each item to the member's username
+      );
+    }
+
+    // Pick winners
+    let winners = [];
+    while (winners.length < n) {
+      const chosen = tickets[Math.floor(Math.random() * tickets.length)];
+      if (winners.indexOf(chosen) === -1) winners.push(chosen);
+    }
+
+    return winners;
+  }
+
   // Schedule a task to run repeatedly (takes a cron schedule--default daily)
   scheduleTask(task, schedule = '0 0 * * *') {
     cron.schedule(schedule, task);
