@@ -3,6 +3,9 @@ const cron = require('node-cron');
 const ProgressBar = require('progress');
 let bar = null;
 
+// HTTP reqeuests
+const https = require('https');
+
 class Bot {
   queue = [];
   constructor(challenges, credentials) {
@@ -51,13 +54,32 @@ class Bot {
         }
       } else { // There was a problem
         if (result.status === 429) { // HTTP 429 means rate limiting
-          console.info('Rate limited. Trying again in 60 seconds.');
+          const options = {
+            method: 'HEAD',
+            host: 'habitica.com',
+            port: 443,
+            path: '/api/v3/user',
+            headers: {
+              'x-api-user': this.credentials.id,
+              'x-api-key': this.credentials.apiToken
+            }
+          };
+          let timeToWait = 0;
+          let requesting = new Promise((resolveRequest, rejectMain) => {
+            const req = https.request(options, function(res) {
+              timeToWait = (new Date(res.headers['x-ratelimit-reset'])) - Date.now() + 1000;
+              resolveRequest(true);
+            });
+            req.end();
+          });
+          await requesting;
+          console.info('Rate limited. Trying again in ' + Math.round(timeToWait / 1000) + ' seconds.');
           this.queue.splice(0, 0, async () => {
             let promise = new Promise((resolve, reject) => {
               setTimeout(() => {
                 console.info('Continuing...');
                 resolve("done!");
-              }, 60000)
+              }, timeToWait)
             });
 
             await promise;
@@ -82,13 +104,32 @@ class Bot {
         bar.tick();
       } else {
         if (result.status === 429) {
-          bar.interrupt('Rate limited. Trying again in 60 seconds.');
+          const options = {
+            method: 'HEAD',
+            host: 'habitica.com',
+            port: 443,
+            path: '/api/v3/user',
+            headers: {
+              'x-api-user': this.credentials.id,
+              'x-api-key': this.credentials.apiToken
+            }
+          };
+          let timeToWait = 0;
+          let requesting = new Promise((resolveRequest, rejectMain) => {
+            const req = https.request(options, function(res) {
+              timeToWait = (new Date(res.headers['x-ratelimit-reset'])) - Date.now() + 1000;
+              resolveRequest(true);
+            });
+            req.end();
+          });
+          await requesting;
+          bar.interrupt('Rate limited. Trying again in ' + Math.round(timeToWait / 1000) + ' seconds.');
           this.queue.splice(0, 0, async () => {
             let promise = new Promise((resolve, reject) => {
               setTimeout(() => {
                 bar.interrupt('Continuing...');
                 resolve("done!");
-              }, 60000)
+              }, timeToWait)
             });
 
             await promise;
@@ -224,7 +265,7 @@ Power: ${challenge.status.power}/${challenge.maxPower}`;
   }
 
   // Send the already-generated reports to a specified guild chat
-  async sendReport(guildId, append = '') {
+  async sendReport(guildId, prepend = '', append = '') {
     async function makeRequest(guildId, report) {
       const result = await request(
         `/groups/${guildId}/chat`,
@@ -258,7 +299,7 @@ Power: ${challenge.status.power}/${challenge.maxPower}`;
       }
     }
 
-    let compiledReport = `## Challenge Statuses\n\n` + this.challenges.list.map(c => c.report).join('\n\n');
+    let compiledReport = prepend + `\n\n` + this.challenges.list.map(c => c.report).join('\n\n');
 
     if (append.length) compiledReport += '\n\n---\n\n' + append;
 
