@@ -137,7 +137,12 @@ class Bot {
             await fetchMemberStats.bind(this, member, challenge)();
           });
         } else {
-          throw new Error(result);
+          console.error(result);
+          console.info(`Retrying user "${member.auth.local.username}"`);
+
+          this.queue.splice(0, 0, async () => {
+            await fetchMemberStats.bind(this, member, challenge)();
+          });
         }
       }
     }
