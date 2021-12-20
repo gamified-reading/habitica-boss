@@ -123,11 +123,19 @@ class Bot {
             req.end();
           });
           await requesting;
-          bar.interrupt('Rate limited. Trying again in ' + Math.round(timeToWait / 1000) + ' seconds.');
+          try{
+            bar.interrupt('Rate limited. Trying again in ' + Math.round(timeToWait / 1000) + ' seconds.');
+          } catch(err) {
+            console.warn('Rate limited. Trying again in ' + Math.round(timeToWait / 1000) + ' seconds.');
+          }
           this.queue.splice(0, 0, async () => {
             let promise = new Promise((resolve, reject) => {
               setTimeout(() => {
-                bar.interrupt('Continuing...');
+                try {
+                  bar.interrupt('Continuing...');
+                } catch(err) {
+                  console.info('Continuing...');
+                }
                 resolve("done!");
               }, timeToWait)
             });
@@ -285,11 +293,19 @@ Power: ${challenge.status.power}/${challenge.maxPower}`;
         console.info('Message sent!');
       } else { // There was a problem
         if (result.status === 429) { // HTTP 429 means rate limiting
-          bar.interrupt('Rate limited. Trying again in 60 seconds.');
+          try {
+            bar.interrupt('Rate limited. Trying again in 60 seconds.');
+          } catch(err) {
+            console.warn('Rate limited. Trying again in 60 seconds.');
+          }
           this.queue.splice(0, 0, async () => {
             let promise = new Promise((resolve, reject) => {
               setTimeout(() => {
-                bar.interrupt('Continuing...');
+                try {
+                  bar.interrupt('Continuing...');
+                } catch(err) {
+                  console.info('Continuing...');
+                }
                 resolve("done!");
               }, 60000)
             });
